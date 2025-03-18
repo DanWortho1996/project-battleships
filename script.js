@@ -10,6 +10,9 @@ const SHIPS = [
     { name: "Carrier", size: 5 }
 ];
 
+let turnTimer;
+const TURN_TIME = 15; // 15 seconds per turn
+
 // Function to create an empty board
 const createEmptyBoard = () => {
     return Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null));
@@ -44,9 +47,32 @@ const renderBoard = (boardElement, board, isAI = false) => {
     }
 };
 
+// Function to start the turn timer
+const startTurnTimer = () => {
+    clearInterval(turnTimer);
+    let timeLeft = TURN_TIME;
+    const timerElement = document.getElementById("turn-timer");
+    timerElement.textContent = `Time Left: ${timeLeft}s`;
+    timerElement.style.color = "green";
+    
+    turnTimer = setInterval(() => {
+        timeLeft--;
+        timerElement.textContent = `Time Left: ${timeLeft}s`;
+        if (timeLeft <= 10) {
+            timerElement.style.color = "red";
+        }
+        if (timeLeft <= 0) {
+            clearInterval(turnTimer);
+            aiAttack(); // If time runs out, AI takes its turn
+        }
+    }, 1000);
+};
+
 // Function to handle player attack
 const playerAttack = (x, y) => {
     if (aiBoard[y][x] === "hit" || aiBoard[y][x] === "miss") return; // Prevent reselecting
+
+    clearInterval(turnTimer); // Stop the timer on successful move
 
     if (aiBoard[y][x] !== null) {
         aiBoard[y][x] = "hit";
@@ -55,7 +81,7 @@ const playerAttack = (x, y) => {
     }
     updateBoardUI(document.getElementById("ai-board"), aiBoard);
     checkWin();
-    aiAttack();
+    setTimeout(aiAttack, 1000); // AI attacks after 1s delay
 };
 
 // Function to check if the player or AI has won
@@ -86,19 +112,6 @@ const updateBoardUI = (boardElement, board) => {
     });
 };
 
-// Randomly place AI ships
-const placeAIShips = () => {
-    SHIPS.forEach(ship => {
-        let placed = false;
-        while (!placed) {
-            const x = Math.floor(Math.random() * GRID_SIZE);
-            const y = Math.floor(Math.random() * GRID_SIZE);
-            const direction = Math.random() > 0.5 ? "horizontal" : "vertical";
-            placed = placeShip(aiBoard, ship, x, y, direction);
-        }
-    });
-};
-
 // Function to place a ship on the board
 const placeShip = (board, ship, x, y, direction) => {
     if (direction === "horizontal") {
@@ -121,6 +134,19 @@ const placeShip = (board, ship, x, y, direction) => {
     return true;
 };
 
+// Randomly place AI ships
+const placeAIShips = () => {
+    SHIPS.forEach(ship => {
+        let placed = false;
+        while (!placed) {
+            const x = Math.floor(Math.random() * GRID_SIZE);
+            const y = Math.floor(Math.random() * GRID_SIZE);
+            const direction = Math.random() > 0.5 ? "horizontal" : "vertical";
+            placed = placeShip(aiBoard, ship, x, y, direction);
+        }
+    });
+};
+
 // AI randomly attacks
 const aiAttack = () => {
     let x, y;
@@ -131,6 +157,7 @@ const aiAttack = () => {
     playerBoard[y][x] = playerBoard[y][x] ? "hit" : "miss";
     updateBoardUI(document.getElementById("player-board"), playerBoard);
     checkWin();
+    startTurnTimer(); // Restart the timer after AI attack
 };
 
 // Initialize game
@@ -140,4 +167,6 @@ const playerBoardElement = document.getElementById("player-board");
 const aiBoardElement = document.getElementById("ai-board");
 renderBoard(playerBoardElement, playerBoard);
 renderBoard(aiBoardElement, aiBoard, true);
+document.body.insertAdjacentHTML("beforeend", '<div id="turn-timer" style="font-size: 20px; text-align: center; margin-top: 10px; color: green;">Time Left: 15s</div>');
+startTurnTimer();
 console.log("AI Board:", aiBoard);
