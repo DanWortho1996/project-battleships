@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battleship Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Battleship Game</h1>
+
+    <!-- Instructions Modal -->
+    <div id="instructions-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeInstructions()">&times;</span>
+            <h2>How to Play</h2>
+            <p>- Click on the AI board to attack.</p>
+            <p>- Hits turn red, misses turn gray.</p>
+            <p>- The AI will attack your board in return.</p>
+            <p>- Sink all AI ships to win!</p>
+            <p>Good luck!</p>
+        </div>
+    </div>
+
+    <div class="board-container">
+        <div class="board-wrapper">
+            <h2>Your Board</h2>
+            <div id="player-board" class="board"></div>
+        </div>
+        <div class="board-wrapper">
+            <h2>AI Board</h2>
+            <div id="ai-board" class="board"></div>
+        </div>
+    </div>    
+
+    <div class="board-container">
+        <div id="player-board" class="board"></div>
+        <div id="ai-board" class="board"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
