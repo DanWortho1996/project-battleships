@@ -39,7 +39,7 @@ const renderBoard = (boardElement, board, isAI = false) => {
             cell.classList.add("cell");
             cell.dataset.x = x;
             cell.dataset.y = y;
-            if (!isAI) {
+            if (isAI) {
                 cell.addEventListener("click", () => playerAttack(x, y));
             }
             boardElement.appendChild(cell);
@@ -68,20 +68,21 @@ const startTurnTimer = () => {
     }, 1000);
 };
 
-// Function to handle player attack
+// Function to handle player attack on AI board
 const playerAttack = (x, y) => {
-    if (aiBoard[y][x] === "hit" || aiBoard[y][x] === "miss") return; // Prevent reselecting
-
-    clearInterval(turnTimer); // Stop the timer on successful move
-
-    if (aiBoard[y][x] !== null) {
-        aiBoard[y][x] = "hit";
-    } else {
-        aiBoard[y][x] = "miss";
+    const cell = document.querySelector(`#ai-board .cell[data-x='${x}'][data-y='${y}']`);
+    if (cell && !cell.classList.contains("clicked")) {
+        if (aiBoard[y][x] !== null) {
+            aiBoard[y][x] = "hit";
+            cell.style.backgroundColor = "red"; // Hit turns red
+        } else {
+            aiBoard[y][x] = "miss";
+            cell.style.backgroundColor = "lightgray"; // Miss turns light gray
+        }
+        cell.classList.add("clicked");
+        checkWin();
+        setTimeout(aiAttack, 1000); // AI attacks after 1s delay
     }
-    updateBoardUI(document.getElementById("ai-board"), aiBoard);
-    checkWin();
-    setTimeout(aiAttack, 1000); // AI attacks after 1s delay
 };
 
 // Function to check if the player or AI has won
@@ -105,14 +106,13 @@ const updateBoardUI = (boardElement, board) => {
         const x = parseInt(cell.dataset.x);
         const y = parseInt(cell.dataset.y);
         if (board[y][x] === "hit") {
-            cell.classList.add("hit");
+            cell.style.backgroundColor = "red"; // AI hit turns red
         } else if (board[y][x] === "miss") {
-            cell.classList.add("miss");
+            cell.style.backgroundColor = "grey"; // AI miss turns grey
         }
     });
 };
 
-// Function to place a ship on the board
 const placeShip = (board, ship, x, y, direction) => {
     if (direction === "horizontal") {
         if (x + ship.size > GRID_SIZE) return false;
@@ -154,7 +154,13 @@ const aiAttack = () => {
         x = Math.floor(Math.random() * GRID_SIZE);
         y = Math.floor(Math.random() * GRID_SIZE);
     } while (playerBoard[y][x] === "hit" || playerBoard[y][x] === "miss");
-    playerBoard[y][x] = playerBoard[y][x] ? "hit" : "miss";
+    
+    if (playerBoard[y][x] !== null) {
+        playerBoard[y][x] = "hit";
+    } else {
+        playerBoard[y][x] = "miss";
+    }
+    
     updateBoardUI(document.getElementById("player-board"), playerBoard);
     checkWin();
     startTurnTimer(); // Restart the timer after AI attack
